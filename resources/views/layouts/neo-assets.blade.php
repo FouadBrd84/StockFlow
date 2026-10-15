@@ -1,4 +1,5 @@
 {{-- Thème « Neo » pour les pages sans barre de navigation (connexion, inscription, mots de passe) --}}
+<link rel="icon" type="image/svg+xml" href="{{ asset('images/stockflow-logo.svg') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">

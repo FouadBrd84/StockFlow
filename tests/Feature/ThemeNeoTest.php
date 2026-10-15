@@ -43,6 +43,32 @@ test('les pages d\'authentification chargent le thème Neo', function (string $r
         ->assertSee('family=Outfit', false);
 })->with(['login', 'register', 'password.request']);
 
+test('la page d\'accueil présente la nouvelle identité StockFlow', function () {
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee('images/stockflow-logo.svg', false)
+        ->assertSee('Rien de trop.')
+        ->assertSee('id="fonctionnalites"', false)
+        ->assertSee(route('login'), false)
+        ->assertSee(route('register'), false);
+});
+
+test('la barre de navigation propose la palette de commandes Ctrl + K', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $this->actingAs($admin)
+        ->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertSee('data-sf-cmdk', false)
+        ->assertSee('images/stockflow-logo.svg', false);
+});
+
+test('les invités ne voient pas la palette de commandes', function () {
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertDontSee('data-sf-cmdk', false);
+});
+
 test('la page de connexion affiche le salut animé', function () {
     $this->get(route('login'))
         ->assertOk()

@@ -9,11 +9,8 @@
     <div class="container-fluid px-4">
 
         {{-- Logos + Titre --}}
-        <a class="navbar-brand d-flex align-items-center gap-2" href="{{ route('home') }}">
-            <img src="{{ asset('images/carrefour.png') }}" alt="Carrefour" height="34">
-            <div class="sf-brand-sep"></div>
-            <img src="{{ asset('images/adg.webp') }}" alt="ADG" height="32" style="border-radius:8px;">
-            <div class="sf-brand-sep"></div>
+        <a class="navbar-brand d-flex align-items-center gap-2 sf-brand" href="{{ route('home') }}">
+            <img src="{{ asset('images/stockflow-logo.svg') }}" alt="" height="38" class="sf-logo">
             <span class="sf-brand-name">StockFlow</span>
         </a>
 
@@ -124,6 +121,11 @@
 
         {{-- Accessibilité --}}
         <div class="d-flex align-items-center gap-1 me-2">
+            @auth
+                <button type="button" class="btn btn-sm sf-chip sf-cmdk-btn" data-sf-cmdk title="Rechercher une page (Ctrl + K)">
+                    <i class="bi bi-search"></i><kbd>Ctrl K</kbd>
+                </button>
+            @endauth
             <button onclick="changerTaille(1)" title="Agrandir le texte" class="btn btn-sm sf-chip">A+</button>
             <button onclick="changerTaille(-1)" title="Réduire le texte" class="btn btn-sm sf-chip">A-</button>
             <button onclick="toggleContraste()" title="Contraste élevé" id="btnContraste" class="btn btn-sm sf-chip">🌙</button>

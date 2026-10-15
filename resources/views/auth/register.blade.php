@@ -90,11 +90,11 @@
 
         {{-- Côté gauche --}}
         <div class="register-left">
-            <img src="{{ asset('images/carrefour.png') }}" alt="Carrefour"
+            <img src="{{ asset('images/stockflow-logo.svg') }}" alt="Logo StockFlow" class="sf-auth-logo"
                  style="height:55px; margin-bottom:20px;">
             <h2 style="font-weight:800; font-size:1.5rem; margin-bottom:8px;">StockFlow</h2>
             <p style="opacity:0.8; text-align:center; font-size:0.85rem; line-height:1.5;">
-                Plateforme de gestion logistique multi-entrepôts Carrefour
+                La logistique multi-entrepôts, en mode fluide ⚡
             </p>
             <div style="margin-top:30px; text-align:center;">
                 <img src="{{ asset('images/adg.webp') }}" alt="ADG Education"
