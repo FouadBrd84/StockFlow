@@ -6,13 +6,18 @@ use App\Models\Alerte;
 use App\Models\Mouvement;
 use App\Models\Stock;
 use App\Models\Transfert;
+use App\Services\PrevisionService;
 use Illuminate\Support\Facades\Auth;
 
 class GestionnaireController extends Controller
 {
-    public function dashboard()
+    public function dashboard(PrevisionService $previsionService)
     {
         $entrepot = Auth::user()->entrepot;
+
+        // Pilotage : valeur du stock du magasin et prochaines ruptures prévues
+        $valeurStock = $previsionService->valeurStock($entrepot->id);
+        $previsions = $previsionService->pourEntrepot($entrepot->id)->take(5);
 
         $stockTotal = Stock::where('entrepot_id', $entrepot->id)->sum('quantite');
         $totalProduits = Stock::where('entrepot_id', $entrepot->id)->where('quantite', '>', 0)->count();
@@ -58,7 +63,8 @@ class GestionnaireController extends Controller
         return view('gestionnaire.dashboard', compact(
             'stockTotal', 'totalProduits', 'totalAlertes',
             'transfertsEnCours', 'derniersMouvements',
-            'stockParProduit', 'mouvements7Jours'
+            'stockParProduit', 'mouvements7Jours',
+            'valeurStock', 'previsions'
         ));
     }
 }

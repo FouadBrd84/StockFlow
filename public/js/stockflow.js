@@ -4,6 +4,10 @@
  * Tout est désactivé si l'utilisateur préfère réduire les animations ou active le contraste élevé.
  */
 (function () {
+    /** Racine du site (fonctionne aussi si StockFlow est servi depuis un sous-dossier). */
+    const RACINE = document.currentScript ? new URL('..', document.currentScript.src).href : '/';
+    let installation = null;
+
     const calme = () =>
         window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
         document.body.classList.contains('contraste-eleve');
@@ -49,7 +53,7 @@
         /** Les chiffres des cartes défilent de 0 jusqu'à leur valeur. */
         document.querySelectorAll('.stat-value').forEach((element) => {
             const texte = element.textContent.trim();
-            const correspondance = texte.match(/^(\d[\d\s.,]*)(.*)$/);
+            const correspondance = texte.match(/^(\d[\d\s.,]*\d|\d)(.*)$/);
             if (!correspondance || calme()) {
                 return;
             }
@@ -113,7 +117,87 @@
         installerProgression();
         installerLueur();
         installerPaletteCommandes();
+        transformerMessagesEnToasts();
+        installerApplication();
     });
+
+    /** Les messages de succès deviennent des notifications qui glissent puis disparaissent. */
+    function transformerMessagesEnToasts() {
+        const messages = document.querySelectorAll('.alert-success, .alert-warning');
+        if (!messages.length) {
+            return;
+        }
+        const pile = document.createElement('div');
+        pile.className = 'sf-toasts';
+        pile.setAttribute('role', 'status');
+        pile.setAttribute('aria-live', 'polite');
+        document.body.appendChild(pile);
+
+        messages.forEach((message, index) => {
+            const toast = document.createElement('div');
+            toast.className = 'sf-toast';
+            toast.style.animationDelay = index * 120 + 'ms';
+            toast.innerHTML = '<span class="sf-toast-ico"></span><span class="sf-toast-texte"></span><button type="button" aria-label="Fermer">×</button>';
+            toast.querySelector('.sf-toast-ico').textContent = message.classList.contains('alert-success') ? '🎉' : '🔔';
+            toast.querySelector('.sf-toast-texte').textContent = message.textContent.trim();
+            const fermer = () => {
+                toast.classList.add('sortie');
+                setTimeout(() => toast.remove(), 350);
+            };
+            toast.querySelector('button').addEventListener('click', fermer);
+            setTimeout(fermer, 5200 + index * 120);
+            pile.appendChild(toast);
+            message.style.display = 'none';
+        });
+    }
+
+    /** Application installable : manifeste, service worker et bouton « Installer ». */
+    function installerApplication() {
+        if (!document.querySelector('link[rel="manifest"]')) {
+            const manifeste = document.createElement('link');
+            manifeste.rel = 'manifest';
+            manifeste.href = RACINE + 'manifest.webmanifest';
+            document.head.appendChild(manifeste);
+        }
+        if (!document.querySelector('meta[name="theme-color"]')) {
+            const theme = document.createElement('meta');
+            theme.name = 'theme-color';
+            theme.content = '#8b5cf6';
+            document.head.appendChild(theme);
+        }
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+            navigator.serviceWorker.register(RACINE + 'sw.js', { scope: RACINE }).catch(() => {});
+        }
+
+        const bouton = document.querySelector('[data-sf-install]');
+        window.addEventListener('beforeinstallprompt', (evenement) => {
+            evenement.preventDefault();
+            installation = evenement;
+            if (bouton) {
+                bouton.classList.add('visible');
+            }
+        });
+        if (bouton) {
+            bouton.addEventListener('click', lancerInstallation);
+        }
+        window.addEventListener('appinstalled', () => {
+            installation = null;
+            if (bouton) {
+                bouton.classList.remove('visible');
+            }
+        });
+    }
+
+    async function lancerInstallation() {
+        if (!installation) {
+            alert("Pour installer StockFlow : menu du navigateur → « Installer l'application » (ou « Ajouter à l'écran d'accueil » sur téléphone).");
+            return;
+        }
+        installation.prompt();
+        await installation.userChoice;
+        installation = null;
+        document.querySelector('[data-sf-install]')?.classList.remove('visible');
+    }
 
     /** « Bonsoir Admin 🌆 · mercredi 15 octobre » au-dessus du titre de la page. */
     function afficherSalut() {
@@ -203,6 +287,7 @@
             { libelle: 'Réduire le texte', icone: 'bi bi-zoom-out', action: () => window.changerTaille && changerTaille(-1), indice: 'Action' },
             { libelle: 'Contraste élevé', icone: 'bi bi-circle-half', action: () => window.toggleContraste && toggleContraste(), indice: 'Action' },
             { libelle: 'Lancer des confettis', icone: 'bi bi-stars', action: () => lancerConfettis(), indice: 'Bonus' },
+            { libelle: "Installer l'application", icone: 'bi bi-phone', action: () => lancerInstallation(), indice: 'App' },
         );
         const deconnexion = document.querySelector('form[action$="/logout"]');
         if (deconnexion) {

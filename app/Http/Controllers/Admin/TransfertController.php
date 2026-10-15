@@ -8,7 +8,9 @@ use App\Models\Entrepot;
 use App\Models\Stock;
 use App\Models\Transfert;
 use App\Services\AlerteService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class TransfertController extends Controller
 {
@@ -37,51 +39,77 @@ class TransfertController extends Controller
         ));
     }
 
-    public function validerCommande(Commande $commande)
+    /**
+     * Valide une commande magasin en « tout ou rien » (RG06 puis RG05).
+     *
+     * La commande et les stocks du dépôt sont verrouillés dans une transaction :
+     * deux validations simultanées ne peuvent ni valider deux fois la même commande,
+     * ni faire passer le stock du dépôt sous zéro.
+     */
+    public function validerCommande(Commande $commande): RedirectResponse
     {
-        if ($commande->statut !== 'en_attente') {
-            return back()->with('error', 'Cette commande ne peut pas être validée.');
-        }
+        $stocksDepotModifies = [];
 
-        $central = Entrepot::where('type', 'central')->first();
-        $magasin = $commande->entrepot;
+        $erreur = DB::transaction(function () use ($commande, &$stocksDepotModifies): ?string {
+            $commande = Commande::lockForUpdate()->findOrFail($commande->id);
 
-        foreach ($commande->produits as $produit) {
-            $stock = Stock::where('produit_id', $produit->id)
-                ->where('entrepot_id', $central->id)
-                ->first();
-
-            if (! $stock || $stock->quantite < $produit->pivot->quantite) {
-                return back()->with('error', "Stock insuffisant pour : {$produit->nom}");
+            if ($commande->statut !== 'en_attente') {
+                return 'Cette commande ne peut pas être validée.';
             }
+
+            $central = Entrepot::where('type', 'central')->firstOrFail();
+            $magasin = $commande->entrepot;
+            $produits = $commande->produits;
+
+            $stocksDepot = Stock::where('entrepot_id', $central->id)
+                ->whereIn('produit_id', $produits->pluck('id'))
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('produit_id');
+
+            foreach ($produits as $produit) {
+                $stock = $stocksDepot->get($produit->id);
+
+                if (! $stock || $stock->quantite < $produit->pivot->quantite) {
+                    return "Stock insuffisant pour : {$produit->nom}";
+                }
+            }
+
+            foreach ($produits as $produit) {
+                $stockSource = $stocksDepot->get($produit->id);
+
+                $stockDestination = Stock::firstOrCreate(
+                    ['produit_id' => $produit->id, 'entrepot_id' => $magasin->id],
+                    ['quantite' => 0]
+                );
+
+                $stockSource->decrement('quantite', $produit->pivot->quantite);
+
+                Transfert::enregistrer([
+                    'stock_source_id' => $stockSource->id,
+                    'stock_destination_id' => $stockDestination->id,
+                    'user_id' => Auth::id(),
+                    'quantite' => $produit->pivot->quantite,
+                    'commande_id' => $commande->id,
+                    'statut' => 'en_cours',
+                    'note' => 'Transfert vers '.$magasin->nom,
+                ]);
+
+                $stocksDepotModifies[] = $stockSource->id;
+            }
+
+            $commande->update(['statut' => 'confirmee']);
+
+            return null;
+        });
+
+        if ($erreur !== null) {
+            return back()->with('error', $erreur);
         }
 
-        foreach ($commande->produits as $produit) {
-            $stockSource = Stock::where('produit_id', $produit->id)
-                ->where('entrepot_id', $central->id)
-                ->first();
-
-            $stockDestination = Stock::firstOrCreate(
-                ['produit_id' => $produit->id, 'entrepot_id' => $magasin->id],
-                ['quantite' => 0]
-            );
-
-            $stockSource->decrement('quantite', $produit->pivot->quantite);
-
-            Transfert::enregistrer([
-                'stock_source_id' => $stockSource->id,
-                'stock_destination_id' => $stockDestination->id,
-                'user_id' => Auth::id(),
-                'quantite' => $produit->pivot->quantite,
-                'commande_id' => $commande->id,
-                'statut' => 'en_cours',
-                'note' => 'Transfert vers '.$magasin->nom,
-            ]);
-
-            AlerteService::verifier($stockSource->id);
+        foreach (array_unique($stocksDepotModifies) as $stockId) {
+            AlerteService::verifier($stockId);
         }
-
-        $commande->update(['statut' => 'confirmee']);
 
         return redirect()->route('admin.magasins.index')
             ->with('success', 'Commande validée — transfert créé.');

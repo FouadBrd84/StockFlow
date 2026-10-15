@@ -36,9 +36,12 @@
                        href="{{ route('admin.magasins.index') }}">
                         <i class="bi bi-shop me-1"></i>Magasins
                     </a>
-                    <a class="nav-link sf-nav-alert {{ request()->routeIs('admin.alertes*') ? 'active' : '' }}"
+                    <a class="nav-link sf-nav-alert {{ request()->routeIs('admin.alertes*') ? 'active' : '' }} {{ $alertesNonLues > 0 ? 'sf-has-alerts' : '' }}"
                        href="{{ route('admin.alertes.index') }}">
                         <i class="bi bi-bell-fill me-1"></i>Alertes
+                        @if($alertesNonLues > 0)
+                            <span class="sf-count" title="Alertes non lues">{{ $alertesNonLues > 99 ? '99+' : $alertesNonLues }}</span>
+                        @endif
                     </a>
 
                     {{-- Dropdown Gestion --}}
@@ -94,9 +97,12 @@
                        href="{{ route('gestionnaire.mouvements.index') }}">
                         <i class="bi bi-clock-history me-1"></i>Mouvements
                     </a>
-                    <a class="nav-link sf-nav-alert {{ request()->routeIs('gestionnaire.alertes*') ? 'active' : '' }}"
+                    <a class="nav-link sf-nav-alert {{ request()->routeIs('gestionnaire.alertes*') ? 'active' : '' }} {{ $alertesNonLues > 0 ? 'sf-has-alerts' : '' }}"
                        href="{{ route('gestionnaire.alertes.index') }}">
                         <i class="bi bi-bell-fill me-1"></i>Alertes
+                        @if($alertesNonLues > 0)
+                            <span class="sf-count" title="Alertes non lues">{{ $alertesNonLues > 99 ? '99+' : $alertesNonLues }}</span>
+                        @endif
                     </a>
                 @endif
 
@@ -124,6 +130,9 @@
             @auth
                 <button type="button" class="btn btn-sm sf-chip sf-cmdk-btn" data-sf-cmdk title="Rechercher une page (Ctrl + K)">
                     <i class="bi bi-search"></i><kbd>Ctrl K</kbd>
+                </button>
+                <button type="button" class="btn btn-sm sf-chip sf-install" data-sf-install title="Installer StockFlow sur cet appareil">
+                    <i class="bi bi-phone"></i> Installer
                 </button>
             @endauth
             <button onclick="changerTaille(1)" title="Agrandir le texte" class="btn btn-sm sf-chip">A+</button>

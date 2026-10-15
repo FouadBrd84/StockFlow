@@ -6,6 +6,9 @@
     <title>StockFlow — La logistique en mode fluide</title>
     <meta name="description" content="StockFlow connecte fournisseurs, dépôt central et magasins : stock en temps réel, transferts, alertes automatiques.">
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/stockflow-logo.svg') }}">
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
+    <meta name="theme-color" content="#0b0a1f">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

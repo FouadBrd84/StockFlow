@@ -56,6 +56,16 @@
             </div>
         </div>
 
+        {{-- Pilotage : valeur du stock + prévisions de rupture --}}
+        <div class="row g-4 mb-4">
+            <div class="col-lg-3">
+                <x-valeur-stock :valeur="$valeurStock" libelle="Valeur de mon stock" />
+            </div>
+            <div class="col-lg-9">
+                <x-previsions-rupture :previsions="$previsions" />
+            </div>
+        </div>
+
         {{-- Graphiques --}}
         <div class="row g-4 mb-4">
             {{-- Graphique donut stock par produit --}}

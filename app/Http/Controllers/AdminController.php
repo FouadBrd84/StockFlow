@@ -9,11 +9,16 @@ use App\Models\Mouvement;
 use App\Models\Produit;
 use App\Models\Stock;
 use App\Models\User;
+use App\Services\PrevisionService;
 
 class AdminController extends Controller
 {
-    public function dashboard()
+    public function dashboard(PrevisionService $previsionService)
     {
+        // Pilotage : valeur du stock et prochaines ruptures prévues
+        $valeurStock = $previsionService->valeurStock();
+        $previsions = $previsionService->pourEntrepot()->take(6);
+
         // Stats
         $totalProduits = Produit::count();
         $totalEntrepots = Entrepot::count();
@@ -61,7 +66,8 @@ class AdminController extends Controller
             'totalProduits', 'totalEntrepots', 'totalFournisseurs',
             'totalUsers', 'totalCommandes', 'totalAlertes',
             'commandesEnAttente', 'derniersMouvements',
-            'stockParEntrepot', 'mouvements7Jours'
+            'stockParEntrepot', 'mouvements7Jours',
+            'valeurStock', 'previsions'
         ));
     }
 }
