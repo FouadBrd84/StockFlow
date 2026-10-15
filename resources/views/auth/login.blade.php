@@ -70,6 +70,7 @@
         .divider { height: 1px; background: #f0f0f0; margin: 20px 0; }
         .alert-danger { background: #fce8e8; border: none; color: #c8102e; border-radius: 10px; border-left: 4px solid #c8102e; }
     </style>
+    @include('layouts.neo-assets')
 </head>
 <body>
     <div class="login-wrapper">
@@ -90,6 +91,7 @@
 
         {{-- Côté droit --}}
         <div class="login-right">
+            <div class="sf-hello">Salut <span>👋</span></div>
             <h3 style="color:#003087; font-weight:800; margin-bottom:6px;">Connexion</h3>
             <p style="color:#888; font-size:0.88rem; margin-bottom:24px;">
                 Accédez à votre espace de gestion

@@ -83,6 +83,7 @@
         .alert-danger { background: #fce8e8; border: none; color: #c8102e; border-radius: 10px; border-left: 4px solid #c8102e; padding: 12px 16px; }
         .fields-hidden { display: none; }
     </style>
+    @include('layouts.neo-assets')
 </head>
 <body>
     <div class="register-wrapper">

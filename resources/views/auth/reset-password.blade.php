@@ -52,6 +52,7 @@
         .req-item { padding: 3px 0; color: #aaa; transition: color 0.2s; }
         .req-item.valid { color: #2e7d32; }
     </style>
+    @include('layouts.neo-assets')
 </head>
 <body>
     <div class="card-custom">

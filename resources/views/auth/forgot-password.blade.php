@@ -50,6 +50,7 @@
         .alert-success { background: #e8f5e9; border: none; color: #2e7d32; border-radius: 10px; border-left: 4px solid #2e7d32; padding: 12px 16px; margin-bottom: 16px; }
         .alert-danger { background: #fce8e8; border: none; color: #c8102e; border-radius: 10px; border-left: 4px solid #c8102e; padding: 12px 16px; margin-bottom: 16px; }
     </style>
+    @include('layouts.neo-assets')
 </head>
 <body>
     <div class="card-custom">

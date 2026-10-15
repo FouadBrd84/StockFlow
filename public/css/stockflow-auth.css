@@ -1,0 +1,111 @@
+/* ══════════════════════════════════════════════════════════════
+   StockFlow — thème « Neo » pour les pages d'authentification
+   (connexion, inscription, mot de passe oublié / réinitialisation / changement)
+   ══════════════════════════════════════════════════════════════ */
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+.login-wrapper, .register-wrapper {
+    display: flex;
+    width: 100%;
+    max-width: 960px;
+    border-radius: 30px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, .78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, .9);
+    box-shadow: 0 40px 80px -30px rgba(76, 29, 149, .55);
+    animation: sf-pop .6s cubic-bezier(.3, 1.4, .5, 1) backwards;
+}
+.register-wrapper { max-width: 1060px; }
+
+/* Panneau coloré : dégradé animé + formes qui flottent */
+.login-left, .register-left {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899, #f97316, #8b5cf6, #6366f1) !important;
+    background-size: 400% 400% !important;
+    animation: sf-slide 14s ease-in-out infinite alternate;
+    color: #fff;
+}
+.login-left > *, .register-left > * { position: relative; z-index: 1; }
+.login-left::before, .register-left::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle at 1px 1px, rgba(255, 255, 255, .25) 1.2px, transparent 0),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 220 220'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' opacity='.35'%3E%3Ccircle cx='30' cy='40' r='12'/%3E%3Cpath d='M170 30 l14 24 h-28 z'/%3E%3Cpath d='M40 170 q14 -16 28 0 t28 0'/%3E%3Cpath d='M180 150 v22 M169 161 h22'/%3E%3Crect x='100' y='90' width='20' height='20' rx='5' transform='rotate(20 110 100)'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 22px 22px, 220px 220px;
+    animation: sf-patterns 40s linear infinite;
+}
+.login-left::after, .register-left::after {
+    content: "";
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    right: -120px;
+    bottom: -120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, .35), transparent 65%);
+    animation: sf-drift 9s ease-in-out infinite alternate;
+}
+.login-left img, .register-left img { filter: drop-shadow(0 10px 18px rgba(0, 0, 0, .25)); }
+.login-left h2, .register-left h2 { font-size: 2.4rem !important; letter-spacing: -.5px; }
+
+.login-right, .register-right { background: transparent !important; }
+.login-right h3, .register-right h3 { color: #1e1b4b !important; font-size: 2rem; position: relative; display: inline-block; padding-bottom: 8px; }
+.login-right h3::after, .register-right h3::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 56px;
+    height: 6px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #6366f1, #ec4899, #f97316);
+}
+.login-right a, .register-right a { color: #8b5cf6 !important; }
+.login-right a:hover, .register-right a:hover { color: #ec4899 !important; }
+
+/* Boutons des pages connexion / inscription */
+.btn-login, .btn-register {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    border: none;
+    border-radius: 16px;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(120deg, #6366f1, #8b5cf6, #ec4899, #8b5cf6) !important;
+    background-size: 200% 100% !important;
+    box-shadow: 0 16px 28px -14px rgba(139, 92, 246, .9);
+    transition: transform .2s, background-position .5s, box-shadow .2s;
+}
+.btn-login:hover, .btn-register:hover { background-position: 100% 0 !important; transform: translateY(-2px); }
+
+.divider { height: 2px !important; border-radius: 2px; background: linear-gradient(90deg, transparent, rgba(139, 92, 246, .35), transparent) !important; }
+
+/* Petit salut animé au-dessus du titre */
+.sf-hello { display: inline-block; font-weight: 700; color: #8b5cf6; margin-bottom: 6px; }
+.sf-hello span { display: inline-block; transform-origin: 70% 70%; animation: sf-wave 2.2s ease-in-out infinite; }
+@keyframes sf-wave { 0%, 60%, 100% { transform: rotate(0); } 10%, 30% { transform: rotate(16deg); } 20%, 40% { transform: rotate(-8deg); } }
+
+/* Pages mot de passe (carte centrée) */
+.card-custom { max-width: 520px; width: 100%; }
+
+/* ══ MOBILE : les deux panneaux s'empilent ══ */
+@media (max-width: 768px) {
+    .login-wrapper, .register-wrapper { flex-direction: column; border-radius: 24px; min-height: 0 !important; }
+    .login-left, .register-left { padding: 32px 24px !important; }
+    .login-left h2, .register-left h2 { font-size: 1.8rem !important; }
+    .login-right, .register-right { padding: 28px 22px !important; }
+}
