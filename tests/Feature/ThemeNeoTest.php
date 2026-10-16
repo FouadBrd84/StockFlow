@@ -63,6 +63,34 @@ test('la barre de navigation propose la palette de commandes Ctrl + K', function
         ->assertSee('images/stockflow-logo.svg', false);
 });
 
+test('la barre propose les trois thèmes et les applique avant l\'affichage', function () {
+    $admin = User::factory()->create(['role' => 'admin']);
+
+    $this->actingAs($admin)
+        ->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertSee('data-sf-theme="neo"', false)
+        ->assertSee('data-sf-theme="prestige"', false)
+        ->assertSee('data-sf-theme="champions"', false)
+        ->assertSee('css/stockflow-themes.css?v=', false)
+        ->assertSee("localStorage.getItem('sf-theme')", false)
+        ->assertSee('family=Barlow+Condensed', false);
+});
+
+test('les pages de connexion respectent aussi le thème choisi', function () {
+    $this->get(route('login'))
+        ->assertOk()
+        ->assertSee('css/stockflow-themes.css?v=', false)
+        ->assertSee("localStorage.getItem('sf-theme')", false);
+});
+
+test('le mode contraste élevé reste prioritaire sur les thèmes sombres', function () {
+    $css = file_get_contents(public_path('css/stockflow-themes.css'));
+
+    expect($css)->toContain('html[data-theme="prestige"] body:not(.contraste-eleve)')
+        ->and($css)->toContain('html[data-theme="champions"] body:not(.contraste-eleve)');
+});
+
 test('les invités ne voient pas la palette de commandes', function () {
     $this->get(route('login'))
         ->assertOk()
