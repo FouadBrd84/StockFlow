@@ -41,9 +41,31 @@
             {{-- Infos profil --}}
             <div class="col-md-4">
                 <div class="card-custom p-4 text-center">
-                    <div class="avatar">
-                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                    </div>
+                    <label for="photoProfil" class="sf-photo-zone" title="Changer ma photo">
+                        @if($user->photo)
+                            <img id="apercuPhoto" class="sf-photo-profil" src="{{ $user->urlPhoto() }}" alt="Ma photo de profil">
+                        @else
+                            <img id="apercuPhoto" class="sf-photo-profil d-none" alt="Aperçu de ma photo">
+                            <span id="initialePhoto" class="sf-photo-profil sf-photo-initiale">{{ $user->initiale() }}</span>
+                        @endif
+                        <span class="sf-photo-camera"><i class="bi bi-camera-fill"></i></span>
+                    </label>
+
+                    <form method="POST" action="{{ route('profil.photo.update') }}" enctype="multipart/form-data" id="formPhoto">
+                        @csrf
+                        <input type="file" name="photo" id="photoProfil" class="d-none" accept="image/jpeg,image/png,image/webp">
+                        <div id="actionsPhoto" class="d-none mb-2">
+                            <button type="submit" class="btn btn-sm btn-primary-custom"><i class="bi bi-upload me-1"></i>Enregistrer la photo</button>
+                        </div>
+                    </form>
+                    <small class="d-block text-muted mb-2">JPG, PNG ou WebP · 2 Mo max</small>
+                    @if($user->photo)
+                        <form method="POST" action="{{ route('profil.photo.destroy') }}" class="mb-3">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm sf-btn-ghost"><i class="bi bi-trash me-1"></i>Supprimer la photo</button>
+                        </form>
+                    @endif
                     <h5 class="fw-bold" style="color:#003087;">{{ $user->name }}</h5>
                     <p style="color:#888; font-size:0.85rem;">{{ $user->email }}</p>
                     <div class="mt-2">
@@ -149,6 +171,17 @@
             'req-number':  { test: v => /[0-9]/.test(v),      label: 'Un chiffre' },
             'req-special': { test: v => /[@$!%*#?&]/.test(v), label: 'Un caractère spécial (@$!%*#?&)' },
         };
+
+        // Aperçu de la photo avant l'envoi
+        document.getElementById('photoProfil').addEventListener('change', function () {
+            const fichier = this.files[0];
+            if (!fichier) { return; }
+            const apercu = document.getElementById('apercuPhoto');
+            apercu.src = URL.createObjectURL(fichier);
+            apercu.classList.remove('d-none');
+            document.getElementById('initialePhoto')?.classList.add('d-none');
+            document.getElementById('actionsPhoto').classList.remove('d-none');
+        });
 
         document.getElementById('newPassword').addEventListener('input', function() {
             const val = this.value;

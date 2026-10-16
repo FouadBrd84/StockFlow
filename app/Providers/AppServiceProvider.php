@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Alerte;
+use App\Models\Message;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -23,7 +24,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('layouts.navigation', function (\Illuminate\View\View $view): void {
-            $view->with('alertesNonLues', $this->compterAlertesNonLues());
+            $view->with([
+                'alertesNonLues' => $this->compterAlertesNonLues(),
+                'messagesNonLus' => Auth::user()?->role === 'admin' ? Message::nonLus()->count() : 0,
+            ]);
         });
     }
 
