@@ -2,8 +2,10 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ asset('css/stockflow.css') }}?v={{ filemtime(public_path('css/stockflow.css')) }}">
+<link rel="stylesheet" href="{{ asset('css/stockflow-themes.css') }}?v={{ filemtime(public_path('css/stockflow-themes.css')) }}">
+@include('layouts.theme-init')
 
 <nav class="navbar navbar-expand-lg sf-nav">
     <div class="container-fluid px-4">
@@ -150,6 +152,31 @@
                     <i class="bi bi-phone"></i> Installer
                 </button>
             @endauth
+            <div class="dropdown">
+                <button type="button" class="btn btn-sm sf-chip" data-bs-toggle="dropdown" aria-expanded="false" title="Changer de thème" aria-label="Changer de thème">
+                    <i class="bi bi-palette2"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end sf-themes">
+                    <li>
+                        <button type="button" class="dropdown-item" data-sf-theme="neo">
+                            <span class="sf-swatch sf-swatch-neo"></span>
+                            <span><b>Neo</b><small>Coloré et joueur</small></span>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item" data-sf-theme="prestige">
+                            <span class="sf-swatch sf-swatch-prestige"></span>
+                            <span><b>Prestige</b><small>Sombre, épuré, haut de gamme</small></span>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button" class="dropdown-item" data-sf-theme="champions">
+                            <span class="sf-swatch sf-swatch-champions"></span>
+                            <span><b>Champions</b><small>La grande soirée européenne</small></span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
             <button onclick="changerTaille(1)" title="Agrandir le texte" class="btn btn-sm sf-chip">A+</button>
             <button onclick="changerTaille(-1)" title="Réduire le texte" class="btn btn-sm sf-chip">A-</button>
             <button onclick="toggleContraste()" title="Contraste élevé" id="btnContraste" class="btn btn-sm sf-chip">🌙</button>

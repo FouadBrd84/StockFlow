@@ -12,20 +12,46 @@
         window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
         document.body.classList.contains('contraste-eleve');
 
-    /** Graphiques Chart.js : même police et couleurs douces que le thème. */
+    /** Réglages propres à chaque thème : police et couleurs des graphiques, confettis. */
+    const THEMES = {
+        neo: {
+            nom: 'Neo', police: "'Outfit', 'Segoe UI', sans-serif", texte: '#64748b', grille: 'rgba(0, 0, 0, .06)',
+            palette: ['#6366f1', '#ec4899', '#06b6d4', '#f97316', '#8b5cf6', '#84cc16', '#facc15', '#14b8a6'],
+            confettis: { couleurs: ['#6366f1', '#8b5cf6', '#ec4899', '#f97316', '#84cc16', '#06b6d4', '#facc15'], etoiles: false },
+        },
+        prestige: {
+            nom: 'Prestige', police: "'Inter', 'Segoe UI', sans-serif", texte: '#8a8f9e', grille: 'rgba(255, 255, 255, .06)',
+            palette: ['#a5b4fc', '#67e8f9', '#c4b5fd', '#86efac', '#fcd34d', '#f9a8d4', '#93c5fd', '#e4e4e7'],
+            confettis: null,
+        },
+        champions: {
+            nom: 'Champions', police: "'Barlow', 'Segoe UI', sans-serif", texte: '#a9b8e8', grille: 'rgba(150, 180, 255, .1)',
+            palette: ['#00d1ff', '#6d7cff', '#fcd34d', '#e2e8f0', '#38bdf8', '#a78bfa', '#34d399', '#93c5fd'],
+            confettis: { couleurs: ['#ffffff', '#e2e8f0', '#fcd34d', '#00d1ff', '#c0c8e0'], etoiles: true },
+        },
+    };
+    const themeActuel = () => THEMES[document.documentElement.dataset.theme] ? document.documentElement.dataset.theme : 'neo';
+
+    function configurerGraphiques() {
+        const reglages = THEMES[themeActuel()];
+        Chart.defaults.font.family = reglages.police;
+        Chart.defaults.color = reglages.texte;
+        Chart.defaults.borderColor = reglages.grille;
+    }
+
+    /** Graphiques Chart.js : même police et couleurs que le thème. */
     if (window.Chart) {
-        Chart.defaults.font.family = "'Outfit', 'Segoe UI', sans-serif";
-        Chart.defaults.color = '#64748b';
+        configurerGraphiques();
         Chart.defaults.plugins.legend.labels.usePointStyle = true;
         Chart.defaults.elements.bar.borderRadius = 10;
         Chart.defaults.elements.line.tension = 0.4;
 
         /** Barres et anneaux aux couleurs du thème (les courbes gardent vert = entrées, rouge = sorties). */
-        const palette = ['#6366f1', '#ec4899', '#06b6d4', '#f97316', '#8b5cf6', '#84cc16', '#facc15', '#14b8a6'];
         Chart.register({
             id: 'sfCouleurs',
             beforeUpdate(graphique) {
                 const type = graphique.config.type;
+                const palette = THEMES[themeActuel()].palette;
                 graphique.data.datasets.forEach((serie) => {
                     const couleurs = graphique.data.labels.map((_, i) => palette[i % palette.length]);
                     if ((serie.type || type) === 'bar') {
@@ -35,7 +61,7 @@
                     }
                     if (type === 'doughnut' || type === 'pie') {
                         serie.backgroundColor = couleurs;
-                        serie.borderColor = '#ffffff';
+                        serie.borderColor = themeActuel() === 'neo' ? '#ffffff' : 'rgba(0, 0, 0, .35)';
                         serie.borderWidth = 4;
                         serie.hoverOffset = 14;
                     }
@@ -82,9 +108,10 @@
                 const zone = carte.getBoundingClientRect();
                 const x = (evenement.clientX - zone.left) / zone.width;
                 const y = (evenement.clientY - zone.top) / zone.height;
+                const intensite = themeActuel() === 'prestige' ? 0.35 : 1;
                 carte.style.setProperty('--mx', x * 100 + '%');
                 carte.style.setProperty('--my', y * 100 + '%');
-                carte.style.transform = `perspective(700px) rotateX(${(0.5 - y) * 10}deg) rotateY(${(x - 0.5) * 12}deg) translateY(-4px)`;
+                carte.style.transform = `perspective(700px) rotateX(${(0.5 - y) * 10 * intensite}deg) rotateY(${(x - 0.5) * 12 * intensite}deg) translateY(-${4 * intensite}px)`;
             });
             carte.addEventListener('mouseleave', () => {
                 carte.style.transform = '';
@@ -119,7 +146,40 @@
         installerPaletteCommandes();
         transformerMessagesEnToasts();
         installerApplication();
+        installerThemes();
     });
+
+    /** Sélecteur de thème : Neo, Prestige, Champions (mémorisé sur l'appareil). */
+    function installerThemes() {
+        const marquerActif = () => {
+            document.querySelectorAll('[data-sf-theme]').forEach((bouton) => {
+                bouton.classList.toggle('actif', bouton.dataset.sfTheme === themeActuel());
+            });
+        };
+        document.querySelectorAll('[data-sf-theme]').forEach((bouton) => {
+            bouton.addEventListener('click', () => changerTheme(bouton.dataset.sfTheme));
+        });
+        document.addEventListener('sf:theme', marquerActif);
+        marquerActif();
+    }
+
+    function changerTheme(nom) {
+        if (!THEMES[nom]) {
+            return;
+        }
+        document.documentElement.setAttribute('data-theme', nom);
+        document.documentElement.setAttribute('data-bs-theme', nom === 'neo' ? 'light' : 'dark');
+        try { localStorage.setItem('sf-theme', nom); } catch (erreur) {}
+
+        if (window.Chart) {
+            configurerGraphiques();
+            Object.values(Chart.instances).forEach((graphique) => graphique.update());
+        }
+        document.dispatchEvent(new CustomEvent('sf:theme', { detail: nom }));
+        if (nom === 'champions' && !calme()) {
+            lancerConfettis();
+        }
+    }
 
     /** Les messages de succès deviennent des notifications qui glissent puis disparaissent. */
     function transformerMessagesEnToasts() {
@@ -288,6 +348,9 @@
             { libelle: 'Contraste élevé', icone: 'bi bi-circle-half', action: () => window.toggleContraste && toggleContraste(), indice: 'Action' },
             { libelle: 'Lancer des confettis', icone: 'bi bi-stars', action: () => lancerConfettis(), indice: 'Bonus' },
             { libelle: "Installer l'application", icone: 'bi bi-phone', action: () => lancerInstallation(), indice: 'App' },
+            { libelle: 'Thème Neo (coloré)', icone: 'bi bi-palette', action: () => changerTheme('neo'), indice: 'Thème' },
+            { libelle: 'Thème Prestige (sombre, épuré)', icone: 'bi bi-gem', action: () => changerTheme('prestige'), indice: 'Thème' },
+            { libelle: 'Thème Champions ⭐', icone: 'bi bi-trophy', action: () => changerTheme('champions'), indice: 'Thème' },
         );
         const deconnexion = document.querySelector('form[action$="/logout"]');
         if (deconnexion) {
@@ -375,6 +438,10 @@
     }
 
     function lancerConfettis() {
+        const reglages = THEMES[themeActuel()].confettis;
+        if (!reglages) {
+            return;
+        }
         const toile = document.createElement('canvas');
         toile.id = 'sf-confetti';
         document.body.appendChild(toile);
@@ -386,7 +453,7 @@
         redimensionner();
         window.addEventListener('resize', redimensionner);
 
-        const couleurs = ['#6366f1', '#8b5cf6', '#ec4899', '#f97316', '#84cc16', '#06b6d4', '#facc15'];
+        const couleurs = reglages.couleurs;
         const confettis = Array.from({ length: 140 }, () => ({
             x: toile.width / 2 + (Math.random() - 0.5) * 200,
             y: toile.height * 0.25,
@@ -396,8 +463,19 @@
             angle: Math.random() * Math.PI,
             rotation: (Math.random() - 0.5) * 0.3,
             couleur: couleurs[Math.floor(Math.random() * couleurs.length)],
-            rond: Math.random() < 0.35,
+            forme: reglages.etoiles ? 'etoile' : (Math.random() < 0.35 ? 'rond' : 'bande'),
         }));
+
+        const dessinerEtoile = (rayon) => {
+            contexte.beginPath();
+            for (let pointe = 0; pointe < 10; pointe++) {
+                const r = pointe % 2 === 0 ? rayon : rayon * 0.45;
+                const angle = (Math.PI / 5) * pointe - Math.PI / 2;
+                contexte.lineTo(Math.cos(angle) * r, Math.sin(angle) * r);
+            }
+            contexte.closePath();
+            contexte.fill();
+        };
 
         const debut = performance.now();
         const dessiner = (maintenant) => {
@@ -414,7 +492,9 @@
                 contexte.translate(c.x, c.y);
                 contexte.rotate(c.angle);
                 contexte.fillStyle = c.couleur;
-                if (c.rond) {
+                if (c.forme === 'etoile') {
+                    dessinerEtoile(c.taille * 0.75);
+                } else if (c.forme === 'rond') {
                     contexte.beginPath();
                     contexte.arc(0, 0, c.taille / 2, 0, Math.PI * 2);
                     contexte.fill();
