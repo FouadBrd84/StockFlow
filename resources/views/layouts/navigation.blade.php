@@ -43,6 +43,13 @@
                             <span class="sf-count" title="Alertes non lues">{{ $alertesNonLues > 99 ? '99+' : $alertesNonLues }}</span>
                         @endif
                     </a>
+                    <a class="nav-link {{ request()->routeIs('admin.messages*') ? 'active' : '' }}"
+                       href="{{ route('admin.messages.index') }}">
+                        <i class="bi bi-envelope-fill me-1"></i>Messages
+                        @if($messagesNonLus > 0)
+                            <span class="sf-count" title="Messages non lus">{{ $messagesNonLus > 99 ? '99+' : $messagesNonLus }}</span>
+                        @endif
+                    </a>
 
                     {{-- Dropdown Gestion --}}
                     <div class="dropdown">
@@ -122,6 +129,14 @@
                     </a>
                 @endif
 
+                {{-- Contacter l'admin (gestionnaire et fournisseur) --}}
+                @if(in_array(Auth::user()->role, ['gestionnaire', 'fournisseur'], true))
+                    <a class="nav-link {{ request()->routeIs('contact.*') ? 'active' : '' }}"
+                       href="{{ route('contact.create') }}">
+                        <i class="bi bi-envelope-paper me-1"></i>Contacter l'admin
+                    </a>
+                @endif
+
             @endauth
         </div>
 
@@ -144,14 +159,18 @@
         <div class="d-flex align-items-center gap-2">
             @auth
                 <div class="sf-user">
-                    <span class="sf-avatar">{{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}</span>
+                    @if(Auth::user()->photo)
+                        <img class="sf-avatar sf-avatar-photo" src="{{ Auth::user()->urlPhoto() }}" alt="Photo de profil de {{ Auth::user()->name }}">
+                    @else
+                        <span class="sf-avatar">{{ Auth::user()->initiale() }}</span>
+                    @endif
                     <a href="{{ route('profil.edit') }}">{{ Auth::user()->name }}</a>
                 </div>
 
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="btn btn-sm sf-btn-logout">
-                        <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+                    <button type="submit" class="btn btn-sm sf-btn-logout" title="Se déconnecter" aria-label="Se déconnecter">
+                        <i class="bi bi-box-arrow-right"></i> <span class="sf-libelle">Déconnexion</span>
                     </button>
                 </form>
             @else

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AlerteController;
 use App\Http\Controllers\Admin\CommandeController as AdminCommandeController;
+use App\Http\Controllers\Admin\MessageController as AdminMessageController;
 use App\Http\Controllers\Admin\MouvementController;
 use App\Http\Controllers\Admin\ProduitController;
 use App\Http\Controllers\Admin\StockController;
@@ -13,6 +14,8 @@ use App\Http\Controllers\FournisseurController;
 use App\Http\Controllers\Gestionnaire\CommandeController as GestionnaireCommandeController;
 use App\Http\Controllers\Gestionnaire\SortieController;
 use App\Http\Controllers\GestionnaireController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\PhotoProfilController;
 use App\Http\Controllers\ProfilController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -42,6 +45,21 @@ Route::middleware(['auth'])->group(function () {
         ->name('profil.edit');
     Route::put('/profil', [ProfilController::class, 'update'])
         ->name('profil.update');
+
+    // Photo de profil (stockée en privé, visible seulement par les utilisateurs connectés)
+    Route::post('/profil/photo', [PhotoProfilController::class, 'update'])
+        ->name('profil.photo.update');
+    Route::delete('/profil/photo', [PhotoProfilController::class, 'destroy'])
+        ->name('profil.photo.destroy');
+    Route::get('/utilisateurs/{user}/photo', [PhotoProfilController::class, 'show'])
+        ->name('photos.show');
+
+    // Contacter l'admin (gestionnaires et fournisseurs) — 5 messages par heure maximum
+    Route::get('/contact', [ContactController::class, 'create'])
+        ->name('contact.create');
+    Route::post('/contact', [ContactController::class, 'store'])
+        ->middleware('throttle:5,60')
+        ->name('contact.store');
 
     // ══════════════════════════════════════
     // Routes Admin
@@ -124,6 +142,11 @@ Route::middleware(['auth'])->group(function () {
             ->name('admin.magasins.index');
         Route::post('/admin/magasins/{commande}/valider', [AdminTransfertController::class, 'validerCommande'])
             ->name('admin.commandes-magasin.valider');
+
+        Route::get('/admin/messages', [AdminMessageController::class, 'index'])
+            ->name('admin.messages.index');
+        Route::post('/admin/messages/{message}/lu', [AdminMessageController::class, 'marquerLu'])
+            ->name('admin.messages.lu');
     });
 
     // ══════════════════════════════════════
